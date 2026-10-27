@@ -339,10 +339,14 @@ class DsgvoGuardPlugin extends Plugin {
           new Notice('DSGVO Guard: nichts zu schwärzen.');
           return;
         }
-        // Von hinten nach vorne ersetzen, damit frühere Offsets gültig bleiben.
-        for (const f of [...findings].reverse()) {
-          editor.replaceRange(redactionFor(f), editor.offsetToPos(f.start), editor.offsetToPos(f.end));
-        }
+        // Eine einzige Transaktion, damit ein Strg+Z alle Ersetzungen zurücknimmt.
+        editor.transaction({
+          changes: findings.map((f) => ({
+            from: editor.offsetToPos(f.start),
+            to: editor.offsetToPos(f.end),
+            text: redactionFor(f),
+          })),
+        });
         new Notice('DSGVO Guard: ' + findings.length + ' Treffer geschwärzt.');
       },
     });
