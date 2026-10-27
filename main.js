@@ -78,6 +78,20 @@ function svnrPlausible(raw) {
   return day >= 1 && day <= 31 && month >= 1 && month <= 12;
 }
 
+// Personalausweisnummer (ab 2010): 9 Zeichen aus Ziffern und den Buchstaben CFGHJKLMNPRTVWXYZ
+// plus Prüfziffer nach ICAO 9303 (Gewichte 7-3-1, A=10 ... Z=35).
+function ausweisValid(raw) {
+  const head = raw.slice(0, 9);
+  if (!/[A-Z]/.test(head) || !/\d/.test(head)) return false;
+  const weights = [7, 3, 1];
+  let sum = 0;
+  for (let i = 0; i < 9; i++) {
+    const c = raw.charCodeAt(i);
+    sum += (c >= 65 ? c - 55 : c - 48) * weights[i % 3];
+  }
+  return sum % 10 === raw.charCodeAt(9) - 48;
+}
+
 // Reihenfolge = Priorität bei überlappenden Treffern.
 const DETECTORS = [
   {
@@ -116,6 +130,20 @@ const DETECTORS = [
     confidence: 'medium',
     regex: /(?<![A-Za-z0-9])\d{2} ?\d{6} ?[A-Z] ?\d{3}(?![A-Za-z0-9])/g,
     validate: svnrPlausible,
+  },
+  {
+    type: 'ausweis',
+    label: 'Personalausweisnummer',
+    confidence: 'medium',
+    regex: /(?<![A-Za-z0-9])[CFGHJKLMNPRTVWXYZ0-9]{9}\d(?![A-Za-z0-9])/g,
+    validate: ausweisValid,
+  },
+  {
+    // Regionale Schreibweisen (Bundesländer); ohne Prüfziffer, da jedes Land eigene Regeln hat.
+    type: 'steuernr',
+    label: 'Steuernummer',
+    confidence: 'medium',
+    regex: /(?<![\d/])(?:\d{2}\/\d{3}\/\d{5}|\d{3}\/\d{3}\/\d{5}|\d{3}\/\d{4}\/\d{4})(?![\d/])/g,
   },
   {
     type: 'email',
@@ -547,6 +575,7 @@ module.exports.detectors = {
   steuerIdValid,
   luhnValid,
   svnrPlausible,
+  ausweisValid,
   isIgnoredPath,
   buildHookScript,
   HOOK_MARKER,

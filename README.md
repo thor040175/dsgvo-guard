@@ -10,6 +10,8 @@ Obsidian-Plugin, das offline personenbezogene Daten im Vault findet. Es sendet n
 | Kreditkarte | Luhn, Präfix 2–6 | hoch |
 | Steuer-ID | ISO 7064 Mod 11,10 | mittel |
 | Rentenversicherungsnummer | Format, Geburtsdatum plausibel | mittel |
+| Personalausweisnummer (ab 2010) | ICAO-9303-Prüfziffer, Buchstaben- und Ziffernmix | mittel |
+| Steuernummer (Schreibweise mit Schrägstrichen) | Format 2/3/5, 3/3/5 oder 3/4/4, ohne Prüfziffer | mittel |
 | E-Mail, Telefon (DE) | nur Muster | niedrig |
 
 ## Befehle
@@ -29,6 +31,7 @@ Mit installiertem Node: `npm test`.
 ## Noch offen
 - Sperre/Warnung vor Sync, Publish oder Git-Push
 - Kategorien nach Art. 9 DSGVO (Gesundheit usw.) per Stichwortliste
-- Steuernummer, Personalausweisnummer, Adressen
+- Adressen, 13-stellige bundeseinheitliche Steuernummer, alte Personalausweise
 - Prüfung geänderter Notizen im Hintergrund
+
 

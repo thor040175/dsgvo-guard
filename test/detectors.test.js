@@ -8,7 +8,7 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 
 // Ohne Obsidian fehlt das 'obsidian'-Modul; main.js muss trotzdem ladbar sein (Git-Hook).
-const { scanText, redactText, ibanValid, steuerIdValid, isIgnoredPath, buildHookScript, HOOK_MARKER } =
+const { scanText, redactText, ibanValid, steuerIdValid, isIgnoredPath, buildHookScript, HOOK_MARKER, ausweisValid } =
   require('../main.js').detectors;
 const MAIN_JS = path.join(__dirname, '..', 'main.js');
 
@@ -121,3 +121,27 @@ test('Schwärzen lässt freigegebene Zeilen unverändert', () => {
     'a DE89370400440532013000 %% dsgvo-ignore %%\nb [GESCHWÄRZT:creditcard]'
   );
 });
+
+test('Personalausweisnummer mit ICAO-Prüfziffer', () => {
+  assert.ok(ausweisValid('T220001293'));
+  assert.ok(ausweisValid('L898902C36'));
+  assert.ok(!ausweisValid('T220001294'));
+  assert.deepStrictEqual(types('Ausweis T220001293 abgelaufen'), ['ausweis']);
+  assert.deepStrictEqual(types('Ausweis T220001294 abgelaufen'), []);
+});
+
+test('Zehnstellige reine Zahlen sind keine Ausweisnummer', () => {
+  assert.deepStrictEqual(types('Zahl 1234567893'), []);
+});
+
+test('Steuernummer in regionalen Schreibweisen', () => {
+  assert.deepStrictEqual(types('Bayern 181/815/08150'), ['steuernr']);
+  assert.deepStrictEqual(types('NRW 133/8150/8159'), ['steuernr']);
+  assert.deepStrictEqual(types('Berlin 21/815/08150'), ['steuernr']);
+});
+
+test('Datum und andere Schrägstrich-Zahlen sind keine Steuernummer', () => {
+  assert.deepStrictEqual(types('Am 12/05/2024 war es'), []);
+  assert.deepStrictEqual(types('Teil 1234/567/89012'), []);
+});
+
