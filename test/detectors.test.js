@@ -145,3 +145,27 @@ test('Datum und andere Schrägstrich-Zahlen sind keine Steuernummer', () => {
   assert.deepStrictEqual(types('Teil 1234/567/89012'), []);
 });
 
+
+test('Art.-9-Stichworte nur mit eingeschalteter Option, als Hinweis', () => {
+  const text = 'Herr X hat eine Krankschreibung und ist Gewerkschaftsmitglied.';
+  assert.deepStrictEqual(types(text), []);
+  assert.deepStrictEqual(types(text, { art9: true }), ['gesundheit', 'gewerkschaft']);
+  assert.ok(scanText(text, { art9: true }).every((f) => f.hintOnly));
+});
+
+test('Art.-9-Hinweise: ein Hinweis pro Kategorie und Zeile', () => {
+  const found = scanText('Diagnose Krebs, Chemotherapie, Depression', { art9: true });
+  assert.strictEqual(found.length, 1);
+  assert.strictEqual(found[0].type, 'gesundheit');
+});
+
+test('Art.-9-Stichworte: Wortgrenzen und Ganzwort-Begriffe', () => {
+  assert.deepStrictEqual(types('Die Hive-Plattform', { art9: true }), []);
+  assert.deepStrictEqual(types('Test auf HIV positiv', { art9: true }), ['gesundheit']);
+  assert.deepStrictEqual(types('Ein Superdiagnostik-Tool', { art9: true }), []);
+});
+
+test('Schwärzen ignoriert Art.-9-Hinweise', () => {
+  const text = 'Diagnose: DE89370400440532013000';
+  assert.strictEqual(redactText(text, scanText(text, { art9: true })), 'Diagnose: [GESCHWÄRZT:iban]');
+});

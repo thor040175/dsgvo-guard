@@ -160,7 +160,69 @@ const DETECTORS = [
   },
 ];
 
+// Besondere Kategorien nach Art. 9 DSGVO per Stichwortliste. Nur Hinweise: ein Stichwort sagt nicht,
+// ob in der Zeile wirklich Daten einer Person stehen. Standardmäßig aus (Einstellung "art9").
+// Begriff = Wortanfang (Endungen frei), mit "$" am Ende = ganzes Wort.
+const ART9_CATEGORIES = [
+  {
+    type: 'gesundheit',
+    label: 'Gesundheitsdaten (Art. 9)',
+    terms: [
+      'diagnos', 'krankschreib', 'krankmeld', 'arbeitsunfähig', 'erkrank', 'krankheit', 'krebs', 'tumor',
+      'chemotherap', 'depression', 'burnout', 'psychotherap', 'psychiatr', 'schwerbehinder', 'hiv$',
+      'diabet', 'schwangerschaft', 'epilep', 'demenz',
+    ],
+  },
+  {
+    type: 'religion',
+    label: 'Religion / Weltanschauung (Art. 9)',
+    terms: [
+      'konfession', 'muslim', 'islam', 'jüdisch', 'katholisch', 'evangelisch', 'kirchenaustritt',
+      'kirchensteuer', 'atheis', 'buddhis', 'hinduis', 'religionszugehörigkeit', 'glaubensgemeinschaft',
+    ],
+  },
+  {
+    type: 'politik',
+    label: 'Politische Meinung (Art. 9)',
+    terms: ['parteimitglied', 'parteizugehörigkeit', 'parteibuch', 'wahlverhalten', 'politische meinung', 'politische gesinnung'],
+  },
+  {
+    type: 'gewerkschaft',
+    label: 'Gewerkschaft (Art. 9)',
+    terms: ['gewerkschaft', 'verdi$', 'ig metall'],
+  },
+  {
+    type: 'herkunft',
+    label: 'Ethnische Herkunft (Art. 9)',
+    terms: ['ethnisch', 'hautfarbe', 'rassisch', 'migrationshintergrund', 'volkszugehörigkeit'],
+  },
+  {
+    type: 'sexualleben',
+    label: 'Sexualleben / Orientierung (Art. 9)',
+    terms: ['sexuelle orientierung', 'sexuelle identität', 'sexualleben', 'homosexuell', 'bisexuell', 'lesbisch', 'transgender'],
+  },
+  {
+    type: 'biometrie',
+    label: 'Genetik / Biometrie (Art. 9)',
+    terms: ['genetisch', 'gentest', 'dna-analyse', 'fingerabdruck', 'biometrisch'],
+  },
+];
+
+const ART9_TYPES = new Set(ART9_CATEGORIES.map((c) => c.type));
+
+for (const cat of ART9_CATEGORIES) {
+  const alternatives = cat.terms.map((t) => (t.endsWith('$') ? t.slice(0, -1) + '(?![\\p{L}\\d])' : t + '\\p{L}*'));
+  DETECTORS.push({
+    type: cat.type,
+    label: cat.label,
+    confidence: 'low',
+    optIn: 'art9',
+    regex: new RegExp('(?<![\\p{L}\\d])(?:' + alternatives.join('|') + ')', 'giu'),
+  });
+}
+
 function previewOf(type, match) {
+  if (ART9_TYPES.has(type)) return match.toLowerCase();
   if (type === 'iban' || type === 'creditcard') {
     const compact = match.replace(/[\s-]/g, '');
     return '…' + compact.slice(-4);
@@ -177,7 +239,9 @@ function scanText(text, options) {
   const kept = [];
 
   for (const det of DETECTORS) {
-    if (CONFIDENCE_RANK[det.confidence] < minRank) continue;
+    if (det.optIn) {
+      if (!(options && options[det.optIn])) continue;
+    } else if (CONFIDENCE_RANK[det.confidence] < minRank) continue;
     for (const m of text.matchAll(det.regex)) {
       if (det.validate && !det.validate(m[0])) continue;
       const start = m.index;
@@ -187,6 +251,7 @@ function scanText(text, options) {
         type: det.type,
         label: det.label,
         confidence: det.confidence,
+        hintOnly: Boolean(det.optIn),
         start,
         end,
         preview: previewOf(det.type, m[0]),
@@ -205,7 +270,17 @@ function scanText(text, options) {
 
   // Zeilen mit der Markierung gelten als bewusst freigegeben, z. B. <!-- dsgvo-ignore -->.
   const lines = text.split('\n');
-  return kept.filter((f) => !lines[f.line - 1].includes(IGNORE_MARKER));
+  const seenHints = new Set();
+  return kept.filter((f) => {
+    if (lines[f.line - 1].includes(IGNORE_MARKER)) return false;
+    if (f.hintOnly) {
+      // Pro Kategorie und Zeile nur ein Hinweis, sonst wird die Liste unübersichtlich.
+      const key = f.type + ':' + f.line;
+      if (seenHints.has(key)) return false;
+      seenHints.add(key);
+    }
+    return true;
+  });
 }
 
 function redactionFor(finding) {
@@ -214,7 +289,8 @@ function redactionFor(finding) {
 
 function redactText(text, findings) {
   let out = text;
-  for (const f of [...findings].sort((a, b) => b.start - a.start)) {
+  // Stichwort-Hinweise (Art. 9) werden nie geschwärzt: nicht das Stichwort ist sensibel, sondern der Kontext.
+  for (const f of findings.filter((x) => !x.hintOnly).sort((a, b) => b.start - a.start)) {
     out = out.slice(0, f.start) + redactionFor(f) + out.slice(f.end);
   }
   return out;
@@ -222,6 +298,7 @@ function redactText(text, findings) {
 
 const DEFAULT_SETTINGS = {
   minConfidence: 'medium',
+  art9: false,
   ignoredPaths: '',
 };
 
@@ -274,10 +351,16 @@ function checkStaged() {
 
   let total = 0;
   for (const name of names) {
-    const findings = scanText(git(['show', ':' + name]), { minConfidence: settings.minConfidence });
+    const findings = scanText(git(['show', ':' + name]), {
+      minConfidence: settings.minConfidence,
+      art9: settings.art9,
+    });
     for (const f of findings) {
-      total++;
-      console.error('  ' + name + ':' + f.line + '  ' + f.label + ' (' + f.preview + ', ' + f.confidence + ')');
+      // Stichwort-Hinweise (Art. 9) werden angezeigt, blockieren den Commit aber nicht.
+      if (!f.hintOnly) total++;
+      console.error(
+        '  ' + name + ':' + f.line + '  ' + (f.hintOnly ? 'Hinweis: ' : '') + f.label + ' (' + f.preview + ', ' + f.confidence + ')'
+      );
     }
   }
 
@@ -366,7 +449,7 @@ class DsgvoGuardPlugin extends Plugin {
       id: 'redact-current',
       name: 'Treffer in aktueller Notiz schwärzen (rückgängig mit Strg+Z)',
       editorCallback: (editor) => {
-        const findings = this.scan(editor.getValue());
+        const findings = this.scan(editor.getValue()).filter((f) => !f.hintOnly);
         if (!findings.length) {
           new Notice('DSGVO Guard: nichts zu schwärzen.');
           return;
@@ -429,7 +512,7 @@ class DsgvoGuardPlugin extends Plugin {
   }
 
   scan(text) {
-    return scanText(text, { minConfidence: this.settings.minConfidence });
+    return scanText(text, { minConfidence: this.settings.minConfidence, art9: this.settings.art9 });
   }
 
   isIgnored(path) {
@@ -553,6 +636,19 @@ class DsgvoGuardSettingTab extends PluginSettingTab {
             this.plugin.settings.minConfidence = v;
             await this.plugin.saveSettings();
           })
+      );
+
+    new Setting(containerEl)
+      .setName('Besondere Kategorien (Art. 9 DSGVO) als Hinweis anzeigen')
+      .setDesc(
+        'Stichwortsuche nach Gesundheit, Religion, Gewerkschaft u. a. Nur Hinweise: viele Fehlalarme, ' +
+          'wird nie geschwärzt und blockiert keine Commits.'
+      )
+      .addToggle((tg) =>
+        tg.setValue(this.plugin.settings.art9).onChange(async (v) => {
+          this.plugin.settings.art9 = v;
+          await this.plugin.saveSettings();
+        })
       );
 
     new Setting(containerEl)

@@ -14,6 +14,9 @@ Obsidian-Plugin, das offline personenbezogene Daten im Vault findet. Es sendet n
 | Steuernummer (Schreibweise mit Schrägstrichen) | Format 2/3/5, 3/3/5 oder 3/4/4, ohne Prüfziffer | mittel |
 | E-Mail, Telefon (DE) | nur Muster | niedrig |
 
+## Besondere Kategorien (Art. 9 DSGVO)
+Optional (Einstellungen, standardmäßig aus): Stichwortsuche nach Gesundheit, Religion, politischer Meinung, Gewerkschaft, ethnischer Herkunft, Sexualleben und Genetik/Biometrie. Das sind **nur Hinweise**: Ein Stichwort sagt nicht, ob eine Person betroffen ist, deshalb gibt es Fehlalarme. Hinweise werden nie geschwärzt, blockieren keine Commits (der Hook zeigt sie nur an) und erscheinen höchstens einmal pro Kategorie und Zeile. Die Stichwortliste steht in `ART9_CATEGORIES` in `main.js`.
+
 ## Befehle
 - Gesamten Vault prüfen (auch über das Ribbon-Symbol)
 - Aktuelle Notiz prüfen
@@ -30,8 +33,8 @@ Mit installiertem Node: `npm test`.
 
 ## Noch offen
 - Sperre/Warnung vor Sync, Publish oder Git-Push
-- Kategorien nach Art. 9 DSGVO (Gesundheit usw.) per Stichwortliste
 - Adressen, 13-stellige bundeseinheitliche Steuernummer, alte Personalausweise
 - Prüfung geänderter Notizen im Hintergrund
+
 
 
