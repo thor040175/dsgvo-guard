@@ -169,3 +169,33 @@ test('Schwärzen ignoriert Art.-9-Hinweise', () => {
   const text = 'Diagnose: DE89370400440532013000';
   assert.strictEqual(redactText(text, scanText(text, { art9: true })), 'Diagnose: [GESCHWÄRZT:iban]');
 });
+
+test('Hook zeigt Art.-9-Hinweise an, blockiert aber nur bei echten Treffern', { skip: !gitAvailable }, () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'dsgvo-guard-art9-'));
+  const repo = path.join(root, 'repo');
+  const plugin = path.join(root, 'plugin');
+  fs.mkdirSync(repo);
+  fs.mkdirSync(plugin);
+  // Eigene Kopie samt data.json, damit das Projekt unberührt bleibt.
+  fs.copyFileSync(MAIN_JS, path.join(plugin, 'main.js'));
+  fs.writeFileSync(path.join(plugin, 'data.json'), JSON.stringify({ art9: true }));
+  const run = (cmd, args) => spawnSync(cmd, args, { cwd: repo, encoding: 'utf8' });
+  const check = () => run('node', [path.join(plugin, 'main.js'), '--check-staged']);
+  try {
+    run('git', ['init']);
+
+    fs.writeFileSync(path.join(repo, 'hinweis.md'), 'Kollege hat eine Krankschreibung.\n');
+    run('git', ['add', 'hinweis.md']);
+    const onlyHint = check();
+    assert.strictEqual(onlyHint.status, 0);
+    assert.ok(onlyHint.stderr.includes('Hinweis: Gesundheitsdaten'));
+
+    fs.writeFileSync(path.join(repo, 'konto.md'), 'IBAN DE89 3704 0044 0532 0130 00\n');
+    run('git', ['add', 'konto.md']);
+    const withHit = check();
+    assert.strictEqual(withHit.status, 1);
+    assert.ok(withHit.stderr.includes('konto.md:1'));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
