@@ -17,6 +17,9 @@ Obsidian-Plugin, das offline personenbezogene Daten im Vault findet. Es sendet n
 - Aktuelle Notiz prüfen
 - Treffer in aktueller Notiz schwärzen (Strg+Z macht es rückgängig)
 
+## Ausnahmen
+Eine Zeile, die `dsgvo-ignore` enthält, wird übersprungen, z. B. `Hotline: 0800 1234567 <!-- dsgvo-ignore -->`. Das gilt für Statusleiste, Schwärzen und Git-Hook. Der Hook lässt sich im Notfall auch mit `git commit --no-verify` umgehen.
+
 ## Installation zum Testen
 Ordner `dsgvo-guard` nach `<Vault>/.obsidian/plugins/dsgvo-guard/` kopieren (nötig sind `main.js` und `manifest.json`), dann in Obsidian unter Community-Plugins aktivieren. Am besten zuerst in einem Test-Vault.
 
@@ -27,5 +30,5 @@ Mit installiertem Node: `npm test`.
 - Sperre/Warnung vor Sync, Publish oder Git-Push
 - Kategorien nach Art. 9 DSGVO (Gesundheit usw.) per Stichwortliste
 - Steuernummer, Personalausweisnummer, Adressen
-- Ausnahmen pro Treffer (Allowlist)
 - Prüfung geänderter Notizen im Hintergrund
+

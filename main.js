@@ -19,6 +19,7 @@ const Setting = obsidian ? obsidian.Setting : class {};
  * ------------------------------------------------------------------ */
 
 const CONFIDENCE_RANK = { low: 1, medium: 2, high: 3 };
+const IGNORE_MARKER = 'dsgvo-ignore';
 
 function luhnValid(num) {
   let sum = 0;
@@ -173,7 +174,10 @@ function scanText(text, options) {
     for (; pos < f.start; pos++) if (text.charCodeAt(pos) === 10) line++;
     f.line = line;
   }
-  return kept;
+
+  // Zeilen mit der Markierung gelten als bewusst freigegeben, z. B. <!-- dsgvo-ignore -->.
+  const lines = text.split('\n');
+  return kept.filter((f) => !lines[f.line - 1].includes(IGNORE_MARKER));
 }
 
 function redactionFor(finding) {

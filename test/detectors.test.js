@@ -103,3 +103,21 @@ test('--check-staged bricht bei Treffern ab und lässt saubere Notizen durch', {
     fs.rmSync(repo, { recursive: true, force: true });
   }
 });
+
+test('Zeile mit dsgvo-ignore wird übersprungen, Nachbarzeilen nicht', () => {
+  const text = [
+    'IBAN DE89 3704 0044 0532 0130 00 <!-- dsgvo-ignore -->',
+    'IBAN DE89 3704 0044 0532 0130 00',
+  ].join('\n');
+  const found = scanText(text);
+  assert.strictEqual(found.length, 1);
+  assert.strictEqual(found[0].line, 2);
+});
+
+test('Schwärzen lässt freigegebene Zeilen unverändert', () => {
+  const text = 'a DE89370400440532013000 %% dsgvo-ignore %%\nb 4111111111111111';
+  assert.strictEqual(
+    redactText(text, scanText(text)),
+    'a DE89370400440532013000 %% dsgvo-ignore %%\nb [GESCHWÄRZT:creditcard]'
+  );
+});
