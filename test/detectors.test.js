@@ -199,3 +199,27 @@ test('Hook zeigt Art.-9-Hinweise an, blockiert aber nur bei echten Treffern', { 
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+test('Adresse mit Straße, Hausnummer, PLZ und Ort', () => {
+  const text = 'Wohnt in der Musterstraße 12a, 10115 Berlin.';
+  const found = scanText(text, { minConfidence: 'low' });
+  assert.deepStrictEqual(found.map((f) => f.type), ['adresse']);
+  assert.strictEqual(text.slice(found[0].start, found[0].end), 'Musterstraße 12a, 10115 Berlin');
+});
+
+test('Adresse über zwei Zeilen und andere Schreibweisen', () => {
+  const two = 'Musterweg 3\n12345 Köln';
+  const found = scanText(two, { minConfidence: 'low' });
+  assert.strictEqual(found.length, 1);
+  assert.strictEqual(two.slice(found[0].start, found[0].end), two);
+  assert.deepStrictEqual(types('Berliner Allee 5', { minConfidence: 'low' }), ['adresse']);
+  assert.deepStrictEqual(types('Hauptstr. 7', { minConfidence: 'low' }), ['adresse']);
+});
+
+test('Adressen nur bei niedriger Schwelle', () => {
+  assert.deepStrictEqual(types('Musterstraße 12, 10115 Berlin'), []);
+});
+
+test('Keine Fehlalarme bei Spring 5, Monitoring 2 oder Version 3', () => {
+  assert.deepStrictEqual(types('Spring 5 und Monitoring 2 in Version 3', { minConfidence: 'low' }), []);
+});

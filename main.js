@@ -146,6 +146,14 @@ const DETECTORS = [
     regex: /(?<![\d/])(?:\d{2}\/\d{3}\/\d{5}|\d{3}\/\d{3}\/\d{5}|\d{3}\/\d{4}\/\d{4})(?![\d/])/g,
   },
   {
+    // Straße + Hausnummer, optional gefolgt von PLZ und Ort (auch in der nächsten Zeile).
+    // Bewusst ohne "-ring" als Endung: sonst würden "Spring 5" oder "Monitoring 2" anschlagen.
+    type: 'adresse',
+    label: 'Adresse',
+    confidence: 'low',
+    regex: /(?<![\p{L}\d])(?:\p{Lu}[\p{L}\-]*(?:str\.|straße|strasse|weg|allee|platz|gasse|damm|ufer|chaussee|steig|pfad)|(?:\p{Lu}[\p{L}\-]*[ \t])+(?:Straße|Strasse|Str\.|Allee|Weg|Platz|Gasse|Ring|Damm|Ufer|Chaussee))[ \t]+\d{1,4}[a-z]?(?![\p{L}\d])(?:,?[ \t]*\r?\n?[ \t]*\d{5}[ \t]+\p{Lu}[\p{L}\-]+)?/gu,
+  },
+  {
     type: 'email',
     label: 'E-Mail-Adresse',
     confidence: 'low',

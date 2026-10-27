@@ -12,6 +12,7 @@ Obsidian-Plugin, das offline personenbezogene Daten im Vault findet. Es sendet n
 | Rentenversicherungsnummer | Format, Geburtsdatum plausibel | mittel |
 | Personalausweisnummer (ab 2010) | ICAO-9303-Prüfziffer, Buchstaben- und Ziffernmix | mittel |
 | Steuernummer (Schreibweise mit Schrägstrichen) | Format 2/3/5, 3/3/5 oder 3/4/4, ohne Prüfziffer | mittel |
+| Adresse (Straße, Hausnummer, optional PLZ und Ort) | nur Muster, bewusst ohne "-ring" | niedrig |
 | E-Mail, Telefon (DE) | nur Muster | niedrig |
 
 ## Besondere Kategorien (Art. 9 DSGVO)
@@ -31,10 +32,14 @@ Ordner `dsgvo-guard` nach `<Vault>/.obsidian/plugins/dsgvo-guard/` kopieren (nö
 ## Tests
 Mit installiertem Node: `npm test`.
 
+## Grenzen
+Obsidian erlaubt Plugins keinen Eingriff in Obsidian Sync oder Publish, es gibt dort keinen Haken vor dem Hochladen. Wirklich blockieren kann nur der Git-Hook (nur mit Git-Vault und Node). Ohne Git bleibt die Statusleiste als Warnung.
+
 ## Noch offen
-- Sperre/Warnung vor Sync, Publish oder Git-Push
-- Adressen, 13-stellige bundeseinheitliche Steuernummer, alte Personalausweise
+- 13-stellige bundeseinheitliche Steuernummer, alte Personalausweise
 - Prüfung geänderter Notizen im Hintergrund
+
+
 
 
 
