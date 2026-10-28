@@ -3,7 +3,7 @@
   "name": "DSGVO Guard",
   "version": "0.1.0",
   "minAppVersion": "1.7.2",
-  "description": "Findet personenbezogene Daten (IBAN, Steuer-ID, Kreditkarte, API-Schlüssel u. a.) offline im Vault und schwärzt sie auf Wunsch.",
+  "description": "Find personal data such as IBANs, tax IDs and API keys in your vault, redact it with a single undo, and block risky Git commits. Works offline.",
   "author": "Armin",
-  "isDesktopOnly": false
+  "isDesktopOnly": true
 }
