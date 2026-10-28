@@ -68,6 +68,10 @@ Copy `main.js` and `manifest.json` into `<vault>/.obsidian/plugins/dsgvo-guard/`
 
 `npm test` runs the tests (Node.js required). The plugin is a single `main.js` without a build step.
 
+## Support
+
+DSGVO Guard is free and open source. If it keeps personal data out of places it does not belong, a coffee helps me keep improving it: [Buy me a coffee](https://buymeacoffee.com/thor040175). Built together with an AI assistant.
+
 ## License
 
 MIT

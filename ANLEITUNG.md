@@ -38,6 +38,9 @@ Das Plugin findet E-Mail, Telefon, Adresse, IBAN usw. und zeigt sie an. Was du d
 
 Das Plugin ist also ein Wächter. Es zeigt, wo personenbezogene Daten liegen. Ob sie bleiben dürfen, entscheidest du.
 
+## Unterstützen
+DSGVO Guard ist kostenlos und Open Source. Wenn es dir hilft, freue ich mich über einen Kaffee: https://buymeacoffee.com/thor040175
+
 ## Grenzen
 - Obsidian erlaubt Plugins keinen Eingriff in Obsidian Sync oder Publish, dort kann nur gewarnt werden. Blockieren kann nur der Git-Hook.
 - Es ist reine Mustersuche und kein Rechtsgutachten. Nicht erkannt werden u. a. Namen, 13-stellige Steuernummern und Ausweise vor 2010. Fehlalarme gibt es vor allem bei "Niedrig" und bei den Art.-9-Stichworten.
