@@ -1,7 +1,7 @@
 {
   "id": "dsgvo-guard",
   "name": "DSGVO Guard",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "minAppVersion": "1.7.2",
   "description": "Find personal data such as IBANs, tax IDs and API keys in your vault, redact it with a single undo, and block risky Git commits. Works offline.",
   "author": "Armin",

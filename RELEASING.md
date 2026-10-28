@@ -25,3 +25,8 @@ Quelle: offizielle Obsidian-Dokumentation zur Einreichung (docs.obsidian.md). Di
 ## Offene Risiken
 - Ob das Plugin die automatische Prüfung besteht, ist nicht getestet.
 - Der Katalog zeigt den Anfang der README. Sie ist deshalb auf Englisch, die deutsche Anleitung steht in `ANLEITUNG.md`.
+
+## Ab 0.1.1: Release über den Workflow
+Die Datei `.github/workflows/release.yml` legt das Release selbst an, sobald ein Versions-Tag gepusht wird (z. B. `0.1.1`, ohne `v`). Sie prüft, dass der Tag zur Version in `manifest.json` passt, führt die Tests aus, erzeugt Attestierungen für `main.js` und `manifest.json` und hängt beide Dateien ans Release.
+
+Ablauf: Version in `manifest.json`, `versions.json` und `package.json` erhöhen, committen, pushen, dann `git tag 0.1.1` und `git push origin 0.1.1`. Danach im Portal "Check for new releases" klicken. Das Release nicht zusätzlich von Hand anlegen, sonst scheitert der Workflow, weil es schon existiert.
