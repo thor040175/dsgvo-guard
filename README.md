@@ -2,7 +2,9 @@
 
 Finds personal data in your Obsidian vault before it ends up where it should not: IBANs, tax IDs, credit cards, API keys and more. Built with German and EU data protection (GDPR, "DSGVO") in mind. Everything runs locally and offline; nothing is sent anywhere.
 
-> Prototype (0.1.0). Pattern matching, not legal advice. Deutsche Anleitung: [ANLEITUNG.md](ANLEITUNG.md).
+<a href="https://buymeacoffee.com/thor040175"><img src="docs/buy-me-a-coffee.svg" alt="Buy me a coffee" width="200"></a>
+
+> Prototype (0.1.1). Pattern matching, not legal advice. Deutsche Anleitung: [ANLEITUNG.md](ANLEITUNG.md).
 
 ## What it detects
 
